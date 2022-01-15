@@ -1,5 +1,8 @@
 import discord
 import random
+
+from discord import channel
+from discord import message
 from Data import Welcome
 from discord.flags import Intents
 
@@ -31,6 +34,17 @@ async def on_member_join(member):
     channel = guild.get_channel(931543683088658456)
     await channel.send("Welcome to this server mr {} ! :partying_face: ".format(member.mention)) # welcome on server 
     await member.send(str(WelcomeMessage()))
+
+
+# notify on reactions
+@client.event
+async def on_raw_reaction_add(reaction):
+    channel=client.get_channel(reaction.channel_id)
+    channel2=client.get_channel(931791895909269514)
+    message=await channel.fetch_message(reaction.message_id)
+    emoji=reaction.emoji.name
+    await channel2.send(f"{reaction.member.name} reacted to {message.author.name}'s message {emoji}")
+
 
 # Messsage test
 @client.event
