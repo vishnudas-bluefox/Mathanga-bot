@@ -1,4 +1,6 @@
+#!/usr/bin/python3
 from inspect import Parameter
+from unittest import result
 import discord
 import random
 from discord.ext import commands
@@ -7,16 +9,15 @@ from discord import channel
 from discord import message
 from Data import Welcome
 from discord.flags import Intents
-import role
 from discord.utils import get
+import sqlite3
 
 
 
 
 intents = discord.Intents().default()
 intents.members =True
-client=commands.Bot(command_prefix=".",intents=intents)
-bot = Bot("!")
+client=commands.Bot(command_prefix="!",intents=intents)
 
 
 # select random message 
@@ -29,6 +30,16 @@ def WelcomeMessage():
 # event for logged in comformation
 @client.event
 async def on_ready():
+
+    db =sqlite3.connect('data.sqlite')
+    cursor = db.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS data(
+            member_id INT,
+            name TEXT
+            )
+    ''')
+    print("Database = +ve")
     print("We have logged in as {0.user}".format(client))
 
 
@@ -68,4 +79,35 @@ async def role(ctx,*args):
     await user.add_roles(role)
 
 
+
+
+# Register names to database using parametrized command 
+@client.command()
+async def register(ctx,user: discord.User):
+    db = sqlite3.connect('data.sqlite')
+    cursor = db.cursor()
+
+    cursor.execute(f"SELECT name FROM data WHERE member_id ={user.id}")
+    result =cursor.fetchone()
+    
+    print(result)
+    if result is None:
+        sql =(" INSERT INTO data(member_id,name) VALUES(?,?)" )
+        val1=(user.id,user.name)
+        cursor.execute(sql,val1)
+        await ctx.channel.send(f"The user succesfully added to the database \n Username:{user.name}\nUserID:{user}")
+
+    else:
+        await ctx.channel.send(f"The user already exist in the database \n Username:{user} \n Name:{user.name}")
+
+
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+
+
+
 client.run('OTMxNTQ0NTAwNDE1OTA5ODg4.YeF-bA.WvIyuTSZObXnLfuwIjqOBjcFz1g')
+
