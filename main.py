@@ -1,15 +1,10 @@
 #!/usr/bin/python3
-from inspect import Parameter
-from unittest import result
 import discord
 import random
 from discord.ext import commands
 from discord.ext.commands import Bot
-from discord import channel
-from discord import message
 from Data import Welcome
 from discord.flags import Intents
-from discord.utils import get
 import sqlite3
 
 
@@ -20,7 +15,7 @@ intents.members =True
 client=commands.Bot(command_prefix="!",intents=intents)
 
 
-# select random message 
+# select random greeting messages for each user  
 def WelcomeMessage():
     messages= Welcome.Welcome.message()
     return random.choice(messages)
@@ -31,7 +26,7 @@ def WelcomeMessage():
 @client.event
 async def on_ready():
 
-    db =sqlite3.connect('data.sqlite')
+    db =sqlite3.connect('data.sqlite')      #create or check for database
     cursor = db.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS data(
@@ -44,7 +39,7 @@ async def on_ready():
 
 
 
-# Welcome greeting
+#Send greeting messages for the newly joined members
 @client.event
 async def on_member_join(member):
     guild = client.get_guild(931543683088658452)
@@ -53,10 +48,6 @@ async def on_member_join(member):
     await member.send(str(WelcomeMessage()))
 
 
-# role by Parameterised cammand
-@client.command()
-async def ping(ctx):
-    await ctx.send("Pong!")
 
 
 # notify on reactions
@@ -70,18 +61,18 @@ async def on_raw_reaction_add(reaction):
 
 
 
-# create role by Parameterised cammand
+# create role by Parameterised cammand [ex : !role Designer]
 @client.command()
 async def role(ctx,*args):
     user=ctx.author
     role=await ctx.guild.create_role(name=args[0])
-    print(f'The{role} role was suscessfully created for {user}')
+    print(f'The {role} role was suscessfully created for {user}')
     await user.add_roles(role)
 
 
 
 
-# Register names to database using parametrized command 
+# Register names to database using parametrized command [ex: !register @testuser#4556]
 @client.command()
 async def register(ctx,user: discord.User):
     db = sqlite3.connect('data.sqlite')
@@ -89,8 +80,6 @@ async def register(ctx,user: discord.User):
 
     cursor.execute(f"SELECT name FROM data WHERE member_id ={user.id}")
     result =cursor.fetchone()
-    
-    print(result)
     if result is None:
         sql =(" INSERT INTO data(member_id,name) VALUES(?,?)" )
         val1=(user.id,user.name)
@@ -107,7 +96,28 @@ async def register(ctx,user: discord.User):
     db.close()
 
 
+# role based data retrival [!names] "You have to create admin role first to acces this command"
+@client.command()
+@commands.has_role("admin") # This must be exactly the name of the appropriate role
+async def names(ctx):
+    db = sqlite3.connect('data.sqlite')
+    cursor = db.cursor()
 
+
+    cursor.execute(f"SELECT name FROM data")
+    result =cursor.fetchall()
+    for i in result:        #using two for loops for get rid of the braces from sqlite3
+        for j in i:
+            await ctx.channel.send(j)
+
+
+    cursor.close()
+    db.close()
+
+# error handling session "Error Handling " [For now there is no error handling just wait for little more time :)]
+@client.event
+async def on_comman_error(ctx,error):
+    pass
 
 client.run('OTMxNTQ0NTAwNDE1OTA5ODg4.YeF-bA.WvIyuTSZObXnLfuwIjqOBjcFz1g')
 
