@@ -119,5 +119,5 @@ async def names(ctx):
 async def on_comman_error(ctx,error):
     pass
 
-client.run('OTMxNTQ0NTAwNDE1OTA5ODg4.YeF-bA.WvIyuTSZObXnLfuwIjqOBjcFz1g')
+client.run('Token')
 
