@@ -1,1 +1,5 @@
-MathangaBot
+*.env
+*role.py
+*test.py
+MathangaBot/
+*data.sqlite
