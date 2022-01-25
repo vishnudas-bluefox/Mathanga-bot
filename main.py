@@ -117,15 +117,29 @@ async def names(ctx):
     for i in result:        #using two for loops for get rid of the braces from sqlite3
         for j in i:
             await ctx.channel.send(j)
+            break;
 
 
     cursor.close()
     db.close()
 
 # error handling session "Error Handling " [For now there is no error handling just wait for little more time :)]
+bad_commands = commands.MissingRole,commands.MissingRequiredArgument,commands.BotMissingPermissions,commands.BotMissingRole
+
+
 @client.event
-async def on_comman_error(ctx,error):
-    pass
+async def on_command_error(ctx, error):
+    if isinstance(error, bad_commands):
+        await ctx.channel.send(f'{error}')
+    if isinstance(error, commands.MissingAnyRole):
+        await ctx.channel.send(f'you are missing some role')
+    if isinstance(error, commands.MissingRole):
+        await ctx.channel.send(f'You are misssing a role')
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.channel.send(f'Missing some permissions please try again()')
+    if isinstance(error, commands.BotMissingAnyRole):
+        await ctx.send(f'Bot missing some role{error}')
+
 Token = os.getenv('username')
 client.run(Token)
 
