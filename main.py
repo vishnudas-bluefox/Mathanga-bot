@@ -6,10 +6,12 @@ from discord.ext.commands import Bot
 from Data import Welcome
 from discord.flags import Intents
 import sqlite3
+from dotenv import load_dotenv
+import os
 
 
 
-
+load_dotenv('.env')
 intents = discord.Intents().default()
 intents.members =True
 client=commands.Bot(command_prefix="!",intents=intents)
@@ -64,10 +66,13 @@ async def on_raw_reaction_add(reaction):
 # create role by Parameterised cammand [ex : !role Designer]
 @client.command()
 async def role(ctx,*args):
-    user=ctx.author
-    role=await ctx.guild.create_role(name=args[0])
-    print(f'The {role} role was suscessfully created for {user}')
-    await user.add_roles(role)
+    try:
+        user=ctx.author
+        role=await ctx.guild.create_role(name=args[0])
+        print(f'The {role} role was suscessfully created for {user}')
+        await user.add_roles(role)
+    except:
+        await ctx.channel.send("Please double check the command [Ex: !role Designer] \n Try once more :🙂 ")
 
 
 
@@ -75,7 +80,10 @@ async def role(ctx,*args):
 # Register names to database using parametrized command [ex: !register @testuser#4556]
 @client.command()
 async def register(ctx,user: discord.User):
-    db = sqlite3.connect('data.sqlite')
+    try:
+        db = sqlite3.connect('data.sqlite')
+    except:
+        await ctx.channel.send("Bot can't connect to database now \nPlease Try Agin() ")
     cursor = db.cursor()
 
     cursor.execute(f"SELECT name FROM data WHERE member_id ={user.id}")
@@ -109,15 +117,29 @@ async def names(ctx):
     for i in result:        #using two for loops for get rid of the braces from sqlite3
         for j in i:
             await ctx.channel.send(j)
+            break
 
 
     cursor.close()
     db.close()
 
 # error handling session "Error Handling " [For now there is no error handling just wait for little more time :)]
-@client.event
-async def on_comman_error(ctx,error):
-    pass
+bad_commands = commands.MissingRole,commands.MissingRequiredArgument,commands.BotMissingPermissions,commands.BotMissingRole
 
-client.run('Token')
+
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, bad_commands):
+        await ctx.channel.send(f'{error}')
+    if isinstance(error, commands.MissingAnyRole):
+        await ctx.channel.send(f'you are missing some role')
+    if isinstance(error, commands.MissingRole):
+        await ctx.channel.send(f'You are misssing a role')
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.channel.send(f'Missing some permissions please try again()')
+    if isinstance(error, commands.BotMissingAnyRole):
+        await ctx.send(f'Bot missing some role{error}')
+
+Token = os.getenv('username')
+client.run(Token)
 
