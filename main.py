@@ -117,7 +117,7 @@ async def names(ctx):
     for i in result:        #using two for loops for get rid of the braces from sqlite3
         for j in i:
             await ctx.channel.send(j)
-            break;
+            break
 
 
     cursor.close()

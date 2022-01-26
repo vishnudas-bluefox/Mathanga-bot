@@ -1,5 +1,5 @@
 *.env
 *role.py
 *test.py
-MathangaBot/
 *data.sqlite
+venv/
